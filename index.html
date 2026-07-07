@@ -6,135 +6,81 @@
     <title>RASEL SPEED TEST | Powered by MD RASEL</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js for visualization -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- html2canvas for PNG Export -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
-<body class="dark-theme">
-    <div id="particle-container"></div>
+<body>
     <div class="mouse-glow" id="mouse-glow"></div>
 
     <nav class="glass-nav">
         <div class="logo">
             <span class="neon-text">RASEL</span> <span class="white-text">SPEED TEST</span>
         </div>
-        <div class="nav-actions">
-            <button id="theme-toggle" class="icon-btn"><i class="fas fa-moon"></i></button>
-            <button id="fullscreen-toggle" class="icon-btn"><i class="fas fa-expand"></i></button>
-        </div>
+        <div class="branding">Powered by MD RASEL</div>
     </nav>
 
     <main class="container">
-        <!-- Dashboard Header -->
-        <section class="hero-section">
-            <div class="main-gauge-container">
-                <div class="speed-gauge">
-                    <svg viewBox="0 0 200 200">
-                        <circle class="bg" cx="100" cy="100" r="90"></circle>
-                        <circle class="progress" id="speed-progress" cx="100" cy="100" r="90"></circle>
-                    </svg>
-                    <div class="gauge-content">
-                        <h2 id="current-speed">0.00</h2>
-                        <p>Mbps</p>
-                    </div>
-                </div>
-                <button id="start-btn" class="btn-primary">START TEST</button>
-                <div id="status-text" class="muted-text">Ready to test connection</div>
-            </div>
-
-            <div class="stats-grid">
-                <div class="glass-card stat-card" data-label="Download">
-                    <i class="fas fa-download icon-dl"></i>
-                    <div class="stat-value" id="download-val">0.00</div>
-                    <div class="stat-unit">Mbps</div>
-                    <div class="mini-chart-container">
-                        <canvas id="downloadChartMini"></canvas>
-                    </div>
-                </div>
-                <div class="glass-card stat-card" data-label="Upload">
-                    <i class="fas fa-upload icon-ul"></i>
-                    <div class="stat-value" id="upload-val">0.00</div>
-                    <div class="stat-unit">Mbps</div>
-                </div>
-                <div class="glass-card stat-card" data-label="Ping">
-                    <i class="fas fa-bolt icon-ping"></i>
-                    <div class="stat-value" id="ping-val">0</div>
-                    <div class="stat-unit">ms</div>
-                </div>
-                <div class="glass-card stat-card" data-label="Jitter">
-                    <i class="fas fa-wave-square icon-jitter"></i>
-                    <div class="stat-value" id="jitter-val">0</div>
-                    <div class="stat-unit">ms</div>
+        <!-- Main Gauge Section -->
+        <div class="gauge-section glass-card">
+            <div class="gauge-container">
+                <svg class="progress-ring" width="280" height="280">
+                    <circle class="progress-ring__circle-bg" stroke="rgba(255,255,255,0.05)" stroke-width="12" fill="transparent" r="120" cx="140" cy="140"/>
+                    <circle id="speed-indicator" class="progress-ring__circle" stroke="#00E5FF" stroke-width="12" stroke-linecap="round" fill="transparent" r="120" cx="140" cy="140"/>
+                </svg>
+                <div class="gauge-inner">
+                    <h1 id="live-speed">0.0</h1>
+                    <p>Mbps</p>
                 </div>
             </div>
-        </section>
-
-        <!-- Network Info Section -->
-        <section class="info-section">
-            <div class="glass-card info-card">
-                <h3><i class="fas fa-network-wired"></i> Connection Details</h3>
-                <div class="info-grid">
-                    <div class="info-item"><span>IP Address:</span> <span id="ip-addr" class="accent-text">Detecting...</span></div>
-                    <div class="info-item"><span>Provider:</span> <span id="isp-name" class="accent-text">Detecting...</span></div>
-                    <div class="info-item"><span>Network:</span> <span id="net-type">Unknown</span></div>
-                    <div class="info-item"><span>Quality:</span> <span id="quality-badge" class="badge">--</span></div>
-                </div>
+            
+            <div class="action-area">
+                <button id="start-btn">START TEST</button>
+                <p id="test-status">READY TO SCAN NETWORK</p>
             </div>
-
-            <div class="glass-card info-card">
-                <h3><i class="fas fa-laptop-code"></i> System Info</h3>
-                <div class="info-grid">
-                    <div class="info-item"><span>OS:</span> <span id="os-info">Detecting...</span></div>
-                    <div class="info-item"><span>Browser:</span> <span id="browser-info">Detecting...</span></div>
-                    <div class="info-item"><span>Threads:</span> <span id="cpu-threads">--</span></div>
-                    <div class="info-item"><span>Resolution:</span> <span id="screen-res">--</span></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- History & Charts -->
-        <section class="data-section">
-            <div class="glass-card chart-container-large">
-                <h3>Speed Trends</h3>
-                <canvas id="mainHistoryChart"></canvas>
-            </div>
-
-            <div class="glass-card history-container">
-                <div class="card-header">
-                    <h3>History</h3>
-                    <div class="history-actions">
-                        <button id="export-json" class="btn-sm">JSON</button>
-                        <button id="export-png" class="btn-sm">PNG</button>
-                        <button id="clear-history" class="btn-sm btn-danger">Clear</button>
-                    </div>
-                </div>
-                <div class="table-responsive">
-                    <table id="history-table">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Down</th>
-                                <th>Up</th>
-                                <th>Ping</th>
-                                <th>Grade</th>
-                            </tr>
-                        </thead>
-                        <tbody id="history-body">
-                            <!-- Rows injected by JS -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <footer>
-        <p>Powered by <strong>MD RASEL</strong></p>
-        <div class="footer-links">
-            <span>&copy; 2024 RASEL SPEED TEST</span> | <span>GitHub Pages Ready</span>
         </div>
-    </footer>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="glass-card stat-item">
+                <i class="fas fa-download icon-down"></i>
+                <div class="label">Download</div>
+                <div class="value" id="download-val">0.00</div>
+                <div class="unit">Mbps</div>
+            </div>
+            <div class="glass-card stat-item">
+                <i class="fas fa-upload icon-up"></i>
+                <div class="label">Upload</div>
+                <div class="value" id="upload-val">0.00</div>
+                <div class="unit">Mbps</div>
+            </div>
+            <div class="glass-card stat-item">
+                <i class="fas fa-bolt icon-ping"></i>
+                <div class="label">Ping</div>
+                <div class="value" id="ping-val">0</div>
+                <div class="unit">ms</div>
+            </div>
+            <div class="glass-card stat-item">
+                <i class="fas fa-wave-square icon-jitter"></i>
+                <div class="label">Jitter</div>
+                <div class="value" id="jitter-val">0</div>
+                <div class="unit">ms</div>
+            </div>
+        </div>
+
+        <!-- Network Info -->
+        <div class="info-section">
+            <div class="glass-card info-box">
+                <h3><i class="fas fa-network-wired"></i> Connection</h3>
+                <div class="info-row"><span>IP Address:</span> <span id="ip-addr" class="highlight">Detecting...</span></div>
+                <div class="info-row"><span>ISP:</span> <span id="isp-name">Detecting...</span></div>
+                <div class="info-row"><span>Location:</span> <span id="location">...</span></div>
+            </div>
+            <div class="glass-card info-box">
+                <h3><i class="fas fa-laptop"></i> System Info</h3>
+                <div class="info-row"><span>OS:</span> <span id="os-info">...</span></div>
+                <div class="info-row"><span>Browser:</span> <span id="browser-info">...</span></div>
+                <div class="info-row"><span>Status:</span> <span id="online-status">Online</span></div>
+            </div>
+        </div>
+    </main>
 
     <script src="script.js"></script>
 </body>
