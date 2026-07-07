@@ -3,81 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RASEL SPEED TEST | Powered by MD RASEL</title>
+    <title>RASEL SPEED TEST | Professional Edition</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="glow-bg"></div>
-
-    <nav class="navbar">
+    <div class="bg-animation"></div>
+    
+    <nav class="glass-nav">
         <div class="logo">
-            <span class="neon-blue">RASEL</span> <span class="text-white">SPEED TEST</span>
+            <span class="neon-text">RASEL</span> <span class="white-text">SPEED TEST</span>
         </div>
-        <div class="branding">Powered by MD RASEL</div>
+        <div class="server-selector">
+            <label>Server:</label>
+            <select id="server-target">
+                <option value="https://speed.cloudflare.com/__down?bytes=">Global (Auto)</option>
+                <option value="https://sgp.speed.cloudflare.com/__down?bytes=">Singapore Server</option>
+                <option value="https://speed.cloudflare.com/__down?bytes=">Bangladesh Edge</option>
+            </select>
+        </div>
     </nav>
 
     <main class="container">
-        <!-- Main Speed Meter -->
-        <section class="meter-section glass-card">
-            <div class="speedometer">
-                <svg class="meter-svg" viewBox="0 0 200 200">
-                    <circle class="meter-bg" cx="100" cy="100" r="90"></circle>
-                    <circle id="meter-progress" class="meter-fill" cx="100" cy="100" r="90"></circle>
-                </svg>
-                <div class="meter-content">
+        <!-- ANALOG GAUGE -->
+        <div class="gauge-card glass-card">
+            <div class="gauge-container">
+                <div class="gauge-marks">
+                    <span>0</span><span>20</span><span>50</span><span>100</span><span>250</span><span>500</span><span>1000</span>
+                </div>
+                <div class="gauge-arc"></div>
+                <div id="needle" class="needle"></div>
+                <div class="gauge-center">
                     <h1 id="main-speed">0.0</h1>
-                    <span>Mbps</span>
+                    <p>Mbps</p>
                 </div>
             </div>
-            <button id="start-btn">BEGIN TEST</button>
-            <p id="status-text">READY FOR SCAN</p>
-        </section>
+            <button id="start-btn">START TEST</button>
+            <div id="status-text">ISP: SECURE & READY</div>
+        </div>
 
-        <!-- Stats Grid -->
-        <section class="stats-grid">
-            <div class="stat-card glass-card">
-                <i class="fas fa-download icon-blue"></i>
-                <p>Download</p>
+        <!-- REAL TIME STATS -->
+        <div class="stats-grid">
+            <div class="stat-box glass-card">
+                <i class="fas fa-download color-dl"></i>
+                <small>Download</small>
                 <h2 id="down-val">0.00</h2>
-                <small>Mbps</small>
+                <span>Mbps</span>
             </div>
-            <div class="stat-card glass-card">
-                <i class="fas fa-upload icon-purple"></i>
-                <p>Upload</p>
+            <div class="stat-box glass-card">
+                <i class="fas fa-upload color-ul"></i>
+                <small>Upload</small>
                 <h2 id="up-val">0.00</h2>
-                <small>Mbps</small>
+                <span>Mbps</span>
             </div>
-            <div class="stat-card glass-card">
-                <i class="fas fa-microchip icon-green"></i>
-                <p>Ping</p>
+            <div class="stat-box glass-card">
+                <i class="fas fa-microchip color-ping"></i>
+                <small>Ping</small>
                 <h2 id="ping-val">0</h2>
-                <small>ms</small>
+                <span>ms</span>
             </div>
-            <div class="stat-card glass-card">
-                <i class="fas fa-random icon-pink"></i>
-                <p>Jitter</p>
-                <h2 id="jitter-val">0</h2>
-                <small>ms</small>
-            </div>
-        </section>
+        </div>
 
-        <!-- Connection & Provider Info -->
-        <section class="info-grid">
+        <!-- ISP & DEVICE INFO -->
+        <div class="info-grid">
             <div class="info-card glass-card">
-                <h3><i class="fas fa-network-wired"></i> Network Provider</h3>
-                <div class="detail-row"><span>ISP Name:</span> <b id="isp-name" class="neon-green">Fetching...</b></div>
-                <div class="detail-row"><span>IP Address:</span> <b id="ip-address">0.0.0.0</b></div>
-                <div class="detail-row"><span>Location:</span> <b id="user-loc">Unknown</b></div>
+                <h3>Network Provider</h3>
+                <div class="row"><span>ISP:</span> <b id="isp-name" class="highlight">Detecting...</b></div>
+                <div class="row"><span>IP:</span> <b id="ip-address">0.0.0.0</b></div>
+                <div class="row"><span>City:</span> <b id="city">...</b></div>
             </div>
             <div class="info-card glass-card">
-                <h3><i class="fas fa-mobile-alt"></i> Device Details</h3>
-                <div class="detail-row"><span>OS:</span> <b id="os-name">Detecting...</b></div>
-                <div class="detail-row"><span>Browser:</span> <b id="browser-name">Detecting...</b></div>
-                <div class="detail-row"><span>Hardware:</span> <b id="cpu-info">Multi-Core</b></div>
+                <h3>Device Specs</h3>
+                <div class="row"><span>OS:</span> <b id="os">...</b></div>
+                <div class="row"><span>Browser:</span> <b id="browser">...</b></div>
+                <div class="row"><span>Engine:</span> <b>Multi-Threaded</b></div>
             </div>
-        </section>
+        </div>
     </main>
+
+    <footer>Powered by MD RASEL | Gigabit Engine v3.0</footer>
 
     <script src="script.js"></script>
 </body>
