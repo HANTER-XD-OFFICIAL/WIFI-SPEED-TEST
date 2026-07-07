@@ -3,92 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RASEL SPEED TEST | Digital Dashboard</title>
+    <title>RASEL SPEED TEST | Powered by MD RASEL</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div id="particles-js"></div>
-    <div class="cursor-glow"></div>
-
-    <nav class="glass-nav">
-        <div class="logo">
-            <span class="neon-text">RASEL</span> <span class="white-text">SPEED TEST</span>
+    <div class="glow-overlay"></div>
+    
+    <nav class="top-nav">
+        <div class="logo">RASEL <span class="accent">SPEED</span></div>
+        <div class="provider-info">
+            <span id="isp-name">Detecting ISP...</span>
+            <span class="separator">|</span>
+            <span id="location-name">Global Server</span>
         </div>
-        <div class="branding">Powered by MD RASEL</div>
     </nav>
 
-    <main class="container">
-        <!-- Dashboard Header: ISP & Info -->
-        <div class="top-info-bar">
-            <div class="info-item glass-card">
-                <i class="fas fa-network-wired"></i>
-                <div>
-                    <small>PROVIDER</small>
-                    <p id="isp-name">Detecting Network...</p>
+    <main class="dashboard">
+        <!-- Main Real-time Speed Display -->
+        <div class="hero-gauge">
+            <div class="main-ring">
+                <svg viewBox="0 0 200 200">
+                    <circle class="ring-bg" cx="100" cy="100" r="90"></circle>
+                    <circle id="ring-progress" class="ring-active" cx="100" cy="100" r="90"></circle>
+                </svg>
+                <div class="speed-content">
+                    <h1 id="live-mbps">0</h1>
+                    <span class="unit">Mbps</span>
                 </div>
             </div>
-            <div class="info-item glass-card">
-                <i class="fas fa-map-marker-alt"></i>
-                <div>
-                    <small>LOCATION</small>
-                    <p id="ip-addr">0.0.0.0</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- The Main Gauge (Modern Analog Style) -->
-        <div class="main-gauge-container glass-card">
-            <div class="gauge-wrapper">
-                <div class="analog-gauge">
-                    <div class="ticks"></div>
-                    <div class="gauge-labels">
-                        <span>0</span><span>20</span><span>50</span><span>100</span><span>500</span><span>1k</span>
-                    </div>
-                    <div id="needle" class="needle"></div>
-                    <div class="gauge-center">
-                        <h1 id="main-speed">0.0</h1>
-                        <p>Mbps</p>
-                    </div>
-                </div>
-            </div>
-            
             <div class="controls">
-                <button id="start-btn" class="glow-button">START TEST</button>
-                <div id="status-label">SYSTEM READY</div>
+                <button id="start-btn">GO</button>
+                <p id="status-update">Ready to Test</p>
             </div>
         </div>
 
-        <!-- Stats Grid -->
-        <div class="stats-grid">
-            <div class="stat-card glass-card download">
-                <div class="stat-icon"><i class="fas fa-arrow-down"></i></div>
-                <div class="stat-info">
-                    <small>DOWNLOAD</small>
-                    <h2 id="down-val">0.00</h2>
-                    <p>Mbps</p>
+        <!-- Professional Stats Grid -->
+        <div class="stats-container">
+            <div class="stat-card glass download">
+                <div class="stat-header">
+                    <i class="fas fa-arrow-down"></i> DOWNLOAD
                 </div>
-                <div class="mini-chart"><canvas id="downChart"></canvas></div>
-            </div>
-            <div class="stat-card glass-card upload">
-                <div class="stat-icon"><i class="fas fa-arrow-up"></i></div>
-                <div class="stat-info">
-                    <small>UPLOAD</small>
-                    <h2 id="up-val">0.00</h2>
-                    <p>Mbps</p>
+                <div class="stat-body">
+                    <span id="final-down">0.00</span> <small>Mbps</small>
                 </div>
             </div>
-            <div class="stat-card glass-card ping">
-                <div class="stat-icon"><i class="fas fa-bolt"></i></div>
-                <div class="stat-info">
-                    <small>LATENCY</small>
-                    <h2 id="ping-val">0</h2>
-                    <p>ms</p>
+            <div class="stat-card glass upload">
+                <div class="stat-header">
+                    <i class="fas fa-arrow-up"></i> UPLOAD
+                </div>
+                <div class="stat-body">
+                    <span id="final-up">0.00</span> <small>Mbps</small>
+                </div>
+            </div>
+            <div class="stat-card glass latency">
+                <div class="stat-header">
+                    <i class="fas fa-bolt"></i> PING
+                </div>
+                <div class="stat-body">
+                    <span id="ping-val">0</span> <small>ms</small>
                 </div>
             </div>
         </div>
     </main>
+
+    <footer class="footer">
+        Powered by MD RASEL | Multi-Thread Engine v5.0
+    </footer>
 
     <script src="script.js"></script>
 </body>
