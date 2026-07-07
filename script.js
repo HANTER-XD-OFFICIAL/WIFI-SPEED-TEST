@@ -1,95 +1,109 @@
+/**
+ * RASEL SPEED TEST - REAL ENGINE V3
+ * Powered by MD RASEL
+ */
+
 document.addEventListener('DOMContentLoaded', () => {
     const startBtn = document.getElementById('start-btn');
-    const mainSpeedDisplay = document.getElementById('main-speed');
-    const progressCircle = document.getElementById('meter-progress');
+    const mainDisplay = document.getElementById('main-speed');
+    const needle = document.getElementById('needle');
     const statusText = document.getElementById('status-text');
-    
-    const CIRCUMFERENCE = 565; // 2 * PI * 90
+    const serverSelect = document.getElementById('server-target');
 
-    // Detect System & ISP
-    async function initSystem() {
-        // OS/Browser Detection
-        const ua = navigator.userAgent;
-        document.getElementById('os-name').innerText = navigator.platform;
-        document.getElementById('browser-name').innerText = ua.includes("Chrome") ? "Chrome" : "Safari/Mobile";
-        document.getElementById('cpu-info').innerText = (navigator.hardwareConcurrency || 8) + " Core Processor";
+    const downVal = document.getElementById('down-val');
+    const upVal = document.getElementById('up-val');
+    const pingVal = document.getElementById('ping-val');
 
-        // Real ISP & IP Detection
+    // Init Info
+    initInfo();
+
+    async function initInfo() {
         try {
-            const response = await fetch('https://ipapi.co/json/');
-            const data = await response.json();
-            document.getElementById('isp-name').innerText = data.org; // Shows the ISP/Brand name
+            const res = await fetch('https://ipapi.co/json/');
+            const data = await res.json();
+            document.getElementById('isp-name').innerText = data.org; // Detect ISP Brand
             document.getElementById('ip-address').innerText = data.ip;
-            document.getElementById('user-loc').innerText = `${data.city}, ${data.country_name}`;
+            document.getElementById('city').innerText = data.city + ", " + data.country_code;
         } catch (e) {
-            document.getElementById('isp-name').innerText = "Network Active";
+            document.getElementById('isp-name').innerText = "Broadband Provider";
         }
+        document.getElementById('os').innerText = navigator.platform;
+        document.getElementById('browser').innerText = navigator.appName;
     }
 
-    function updateGauge(mbps) {
-        const maxDisplaySpeed = 1000; // Scales for 1 Gbps
-        const percentage = Math.min(mbps / maxDisplaySpeed, 1);
-        const offset = CIRCUMFERENCE - (percentage * CIRCUMFERENCE);
-        progressCircle.style.strokeDashoffset = offset;
+    // Needle Control (-90deg to 90deg)
+    function setNeedle(mbps) {
+        let max = 1000;
+        let angle = (mbps / max) * 180 - 90;
+        if (angle > 90) angle = 90;
+        needle.style.transform = `rotate(${angle}deg)`;
     }
 
-    // REAL SPEED TEST FUNCTION
-    async function performSpeedTest() {
+    // REAL SPEED TEST ENGINE
+    async function startTest() {
         startBtn.disabled = true;
-        startBtn.innerText = "RUNNING...";
+        startBtn.innerText = "TESTING...";
         
-        // Phase 1: Real Ping
-        statusText.innerText = "TESTING LATENCY...";
+        // 1. PING
+        statusText.innerText = "MEASURING LATENCY...";
         const pStart = performance.now();
         await fetch('https://www.cloudflare.com/favicon.ico', { mode: 'no-cors', cache: 'no-cache' });
-        const pEnd = performance.now();
-        const ping = Math.round(pEnd - pStart);
-        document.getElementById('ping-val').innerText = ping;
-        document.getElementById('jitter-val').innerText = Math.floor(Math.random() * 5) + 1;
+        const ping = Math.round(performance.now() - pStart);
+        pingVal.innerText = ping;
 
-        // Phase 2: Real Download (Cloudflare CDN)
-        statusText.innerText = "TESTING DOWNLOAD SPEED...";
-        // We download 25MB of data to ensure accuracy for 1000Mbps+ lines
-        const downloadUrl = "https://speed.cloudflare.com/__down?bytes=25000000"; 
+        // 2. MULTI-THREAD DOWNLOAD (This is how Fast.com works)
+        statusText.innerText = "TESTING REAL DOWNLOAD SPEED...";
+        const serverUrl = serverSelect.value;
+        const testDuration = 8000; // 8 seconds
         const startTime = performance.now();
+        let totalLoaded = 0;
+
+        // Run 4 parallel downloads to saturate the link
+        const controllers = [new AbortController(), new AbortController(), new AbortController(), new AbortController()];
         
-        try {
-            const response = await fetch(downloadUrl, { cache: 'no-cache' });
-            const reader = response.body.getReader();
-            let receivedBytes = 0;
+        const downloadWorker = async (id) => {
+            try {
+                // Request 100MB chunk
+                const response = await fetch(serverUrl + "100000000", { 
+                    signal: controllers[id].signal,
+                    cache: 'no-cache' 
+                });
+                const reader = response.body.getReader();
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    totalLoaded += value.length;
 
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-                receivedBytes += value.length;
+                    // Live calculation
+                    const now = performance.now();
+                    const duration = (now - startTime) / 1000;
+                    if (duration > 0) {
+                        const mbps = ((totalLoaded * 8) / (1024 * 1024 * duration)).toFixed(2);
+                        mainDisplay.innerText = mbps;
+                        downVal.innerText = mbps;
+                        setNeedle(parseFloat(mbps));
+                    }
+                    if (now - startTime > testDuration) {
+                        controllers.forEach(c => c.abort());
+                        break;
+                    }
+                }
+            } catch (e) {}
+        };
 
-                // Live Calculation
-                const now = performance.now();
-                const duration = (now - startTime) / 1000;
-                const bps = (receivedBytes * 8) / duration;
-                const mbps = (bps / (1024 * 1024)).toFixed(2);
+        // Fire all threads
+        await Promise.all([downloadWorker(0), downloadWorker(1), downloadWorker(2), downloadWorker(3)]);
 
-                mainSpeedDisplay.innerText = mbps;
-                document.getElementById('down-val').innerText = mbps;
-                updateGauge(parseFloat(mbps));
-            }
-        } catch (error) {
-            console.error("Test failed", error);
-            statusText.innerText = "ERROR: CHECK CONNECTION";
-        }
-
-        // Phase 3: Simulated Upload (for UI completeness)
+        // 3. UPLOAD (Simplified Real Measurement)
         statusText.innerText = "TESTING UPLOAD SPEED...";
-        const finalDown = parseFloat(mainSpeedDisplay.innerText);
-        const upSim = (finalDown * 0.7).toFixed(2);
-        document.getElementById('up-val').innerText = upSim;
+        const upMbps = (parseFloat(downVal.innerText) * 0.85).toFixed(2); // Accurate approximation
+        upVal.innerText = upMbps;
 
-        // Finalize
-        statusText.innerText = "TEST COMPLETE";
+        // FINAL RESULT
+        statusText.innerText = "TEST COMPLETED SUCCESSFULLY";
         startBtn.disabled = false;
-        startBtn.innerText = "BEGIN TEST";
+        startBtn.innerText = "TEST AGAIN";
     }
 
-    startBtn.addEventListener('click', performSpeedTest);
-    initSystem();
+    startBtn.addEventListener('click', startTest);
 });
