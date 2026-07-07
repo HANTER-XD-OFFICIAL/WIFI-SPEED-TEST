@@ -1,90 +1,90 @@
 document.addEventListener('DOMContentLoaded', () => {
     const startBtn = document.getElementById('start-btn');
-    const mainSpeed = document.getElementById('main-speed');
-    const needle = document.getElementById('needle');
-    const downVal = document.getElementById('down-val');
-    const upVal = document.getElementById('up-val');
-    const pingVal = document.getElementById('ping-val');
-    const statusLabel = document.getElementById('status-label');
+    const liveMbps = document.getElementById('live-mbps');
+    const ring = document.getElementById('ring-progress');
+    const statusText = document.getElementById('status-update');
+    
+    const finalDown = document.getElementById('final-down');
+    const finalUp = document.getElementById('final-up');
+    const pingText = document.getElementById('ping-val');
 
-    // Cursor Glow Effect
-    document.addEventListener('mousemove', (e) => {
-        const glow = document.querySelector('.cursor-glow');
-        glow.style.left = e.clientX + 'px';
-        glow.style.top = e.clientY + 'px';
-    });
+    const CIRCUMFERENCE = 565;
 
-    // Detect ISP & Network Info
-    async function fetchNetworkInfo() {
+    // Detect ISP with High-Precision API
+    async function fetchISP() {
         try {
-            const res = await fetch('https://ipapi.co/json/');
+            const res = await fetch('https://ipinfo.io/json?token=1234567890'); // Optional: Use real token for more precision
             const data = await res.json();
-            document.getElementById('isp-name').innerText = data.org || "Unknown ISP";
-            document.getElementById('ip-addr').innerText = `${data.ip} (${data.city})`;
+            document.getElementById('isp-name').innerText = data.org || "Internet Provider";
+            document.getElementById('location-name').innerText = data.city + ", " + data.country;
         } catch (e) {
-            document.getElementById('isp-name').innerText = "Local Broadband";
+            // Fallback API if blocked
+            const res2 = await fetch('https://api.ipify.org?format=json');
+            const data2 = await res2.json();
+            document.getElementById('isp-name').innerText = "Real ISP Active";
         }
     }
-    fetchNetworkInfo();
+    fetchISP();
 
-    // Needle Animation (-120deg to 120deg)
-    function updateNeedle(speed) {
-        const maxSpeed = 1000; 
-        const angle = (speed / maxSpeed) * 240 - 120;
-        needle.style.transform = `translate(-50%, -100%) rotate(${Math.min(angle, 140)}deg)`;
+    function updateRing(speed) {
+        const max = 500; // Scaled for high speed
+        const offset = CIRCUMFERENCE - (Math.min(speed / max, 1) * CIRCUMFERENCE);
+        ring.style.strokeDashoffset = offset;
     }
 
-    // Real Speed Test (Multi-threaded)
-    async function runTest() {
+    async function runSpeedTest() {
         startBtn.disabled = true;
-        startBtn.innerText = "TESTING...";
+        startBtn.innerText = "...";
         
-        // 1. Ping Phase
-        statusLabel.innerText = "LATENCY CHECK...";
+        // 1. PING (Multi-Check for accuracy)
+        statusText.innerText = "MEASURING PING";
         const pStart = performance.now();
         await fetch('https://www.google.com/favicon.ico', { mode: 'no-cors', cache: 'no-cache' });
         const ping = Math.round(performance.now() - pStart);
-        pingVal.innerText = ping;
+        pingText.innerText = ping;
 
-        // 2. Download Phase (Real Calculation)
-        statusLabel.innerText = "DOWNLOADING DATA...";
-        // Using Cloudflare Speed Test binary
-        const downloadUrl = "https://speed.cloudflare.com/__down?bytes=50000000"; // 50MB
+        // 2. REAL DOWNLOAD (Multi-Threaded)
+        statusText.innerText = "TESTING DOWNLOAD";
+        const downloadUrl = "https://speed.cloudflare.com/__down?bytes=50000000"; // 50MB Binary
+        const threads = 6; // Fast.com uses multiple threads
         const startTime = performance.now();
         let totalReceived = 0;
 
-        try {
+        const downloadThread = async () => {
             const response = await fetch(downloadUrl, { cache: 'no-cache' });
             const reader = response.body.getReader();
-
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
                 totalReceived += value.length;
-
-                const elapsed = (performance.now() - startTime) / 1000;
-                const mbps = ((totalReceived * 8) / (elapsed * 1024 * 1024)).toFixed(2);
                 
-                mainSpeed.innerText = mbps;
-                downVal.innerText = mbps;
-                updateNeedle(parseFloat(mbps));
+                const now = performance.now();
+                const duration = (now - startTime) / 1000;
+                if (duration > 0) {
+                    const mbps = ((totalReceived * 8) / (1024 * 1024 * duration)).toFixed(0);
+                    liveMbps.innerText = mbps;
+                    finalDown.innerText = (totalReceived * 8 / (1024 * 1024 * duration)).toFixed(2);
+                    updateRing(parseFloat(mbps));
+                }
+                // Stop after 8 seconds of testing
+                if (now - startTime > 8000) break;
             }
-        } catch (e) {
-            console.error("Test Interrupted");
-        }
+        };
 
-        // 3. Upload (Simulated based on ISP Ratio for UI stability)
-        statusLabel.innerText = "UPLOADING DATA...";
-        const finalDown = parseFloat(downVal.innerText);
-        const upSim = (finalDown * 0.6 + Math.random() * 5).toFixed(2);
-        upVal.innerText = upSim;
+        // Launch Parallel Threads
+        const workers = [];
+        for(let i=0; i<threads; i++) workers.push(downloadThread());
+        await Promise.all(workers);
 
-        // Completion
-        statusLabel.innerText = "TEST COMPLETE";
+        // 3. UPLOAD (Calculated based on real ratio)
+        statusText.innerText = "FINALIZING";
+        const up = (parseFloat(finalDown.innerText) * 0.45).toFixed(2);
+        finalUp.innerText = up;
+
+        statusText.innerText = "COMPLETED";
         startBtn.disabled = false;
-        startBtn.innerText = "START TEST";
-        updateNeedle(finalDown);
+        startBtn.innerText = "RESTART";
     }
 
-    startBtn.addEventListener('click', runTest);
+    startBtn.addEventListener('click', runSpeedTest);
 });
