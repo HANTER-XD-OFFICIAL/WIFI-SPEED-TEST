@@ -1,0 +1,21 @@
+{
+  "name": "RASEL SPEED TEST",
+  "short_name": "RaselSpeed",
+  "description": "Professional Cybernetic Speed Test",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#050816",
+  "theme_color": "#00E5FF",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3159/3159461.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3159/3159461.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
